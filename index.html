@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register — CampusBot AI — Aklan Catholic College</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+
+  <!-- FontAwesome for UI Icons & Password Eye Toggle -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <!-- Core Stylesheet (ACC Formal Collegiate Theme) -->
+  <link rel="stylesheet" href="css/style.css">
+
+  <!-- Instant Theme Loader (Zero Glitch / Flash-Free) -->
+  <script src="js/theme.js"></script>
+
+  <!-- Third-party Client Libraries (Compat builds: works in file:/// and http) -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+</head>
+<body data-page="register">
+
+<div class="app">
+
+  <!-- Top Institutional Navigation (Clean & Unified) -->
+  <header class="nav">
+    <div class="brand">
+      <div class="brand-mark">
+        <i class="fa-solid fa-graduation-cap"></i>
+      </div>
+      <div class="brand-text">
+        <h1>CampusBot AI</h1>
+        <p id="schoolNameLabel">Aklan Catholic College</p>
+      </div>
+    </div>
+    <div class="nav-actions">
+      <button type="button" class="theme-toggle-btn" id="themeToggleBtn" onclick="toggleTheme()" aria-label="Toggle dark/light mode" title="Toggle theme">
+        <i class="fa-solid fa-moon"></i>
+        <span class="theme-btn-label">Theme</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ======================================================================
+       UNIFIED REGISTRATION VIEW
+       ====================================================================== -->
+  <main id="authView">
+    <div id="studentGate" class="gate-wrap">
+      <div class="auth-card">
+        <div id="studentAuthBody"></div>
+      </div>
+    </div>
+  </main>
+
+</div>
+
+<!-- ======================================================================
+     MODALS
+     ====================================================================== -->
+
+<!-- Terms & Privacy Modal -->
+<div class="modal-overlay" id="infoModalOverlay" role="dialog" aria-modal="true">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3 id="infoModalTitle">Terms & Policy</h3>
+      <button type="button" class="modal-close" onclick="closeInfoModal()" aria-label="Close modal">&times;</button>
+    </div>
+    <div id="infoModalBody"></div>
+  </div>
+</div>
+
+<!-- ======================================================================
+     SCRIPTS
+     ====================================================================== -->
+<script src="js/firebase-config.js"></script>
+<script src="js/auth.js"></script>
+
+<script>
+/* ============================================================================
+   REGISTRATION PAGE INITIALIZATION
+   ============================================================================ */
+
+async function initCampusBotRegister() {
+  if (typeof window.loadData !== 'function') {
+    document.body.insertAdjacentHTML('afterbegin', '<div role="alert" style="background:#A32A18;color:#fff;padding:12px 16px;font:600 14px sans-serif;">CampusBot could not load js/firebase-config.js. Keep index.html next to the css/ and js/ folders.</div>');
+    return;
+  }
+
+  // 1. Load school knowledge base / defaults
+  await window.loadData();
+
+  // 2. Set School Name label
+  const nameLabel = document.getElementById('schoolNameLabel');
+  if (nameLabel && window.DATA && window.DATA.school) {
+    nameLabel.textContent = window.DATA.school.name;
+  }
+
+  // 3. Render Unified Registration Form
+  renderStudentAuth();
+
+  // 4. If already logged in, redirect to active dashboard
+  if (typeof window.initAuthSessions === 'function') {
+    window.initAuthSessions();
+  }
+}
+
+// Initialize on DOM load
+window.addEventListener('DOMContentLoaded', initCampusBotRegister);
+</script>
+
+</body>
+</html>

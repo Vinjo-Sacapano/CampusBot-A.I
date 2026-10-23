@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Dashboard — CampusBot AI — Aklan Catholic College</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+
+  <!-- FontAwesome for UI Icons & Password Eye Toggle -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <!-- Core Stylesheet (ACC Formal Collegiate Theme) -->
+  <link rel="stylesheet" href="css/style.css">
+
+  <!-- Instant Theme Loader (Zero Glitch / Flash-Free) -->
+  <script src="js/theme.js"></script>
+
+  <!-- Third-party Client Libraries (Compat builds: works in file:/// and http) -->
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+</head>
+<body data-page="student-dashboard">
+
+<div class="app">
+
+  <!-- Top Institutional Navigation -->
+  <header class="nav">
+    <div class="brand">
+      <div class="brand-mark">
+        <i class="fa-solid fa-graduation-cap"></i>
+      </div>
+      <div class="brand-text">
+        <h1>CampusBot AI</h1>
+        <p id="schoolNameLabel">Aklan Catholic College</p>
+      </div>
+    </div>
+    <div class="nav-actions">
+      <button type="button" class="theme-toggle-btn" id="themeToggleBtn" onclick="toggleTheme()" aria-label="Toggle dark/light mode" title="Toggle theme">
+        <i class="fa-solid fa-moon"></i>
+        <span class="theme-btn-label">Theme</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ======================================================================
+       STUDENT DASHBOARD CONTENT
+       ====================================================================== -->
+  <main id="studentView">
+
+    <!-- Session Bar -->
+    <div class="session-bar">
+      <div class="who">Welcome back, <span id="studentWhoName">Student</span>!</div>
+      <button type="button" class="logout-btn" onclick="logoutStudent()">
+        <i class="fa-solid fa-arrow-right-from-bracket" style="margin-right:5px;"></i>Log out
+      </button>
+    </div>
+
+    <!-- Campus announcements feed (newest first) -->
+    <section class="ann-section" aria-labelledby="annHeading">
+      <div class="ann-head">
+        <h2 id="annHeading"><i class="fa-solid fa-bullhorn" aria-hidden="true"></i>Campus announcements</h2>
+        <span class="ann-count" id="annCount"></span>
+      </div>
+      <div class="ann-feed" id="flapBoard" tabindex="0" role="region" aria-label="Announcements, newest first"></div>
+    </section>
+
+    <!-- Student Portal Main Grid -->
+    <div class="grid">
+      
+      <!-- Left Side: Suggested Quick Chips -->
+      <aside class="panel side-panel">
+        <h2 class="side-title">Quick Information</h2>
+        <div class="chip-list" id="quickChips"></div>
+      </aside>
+
+      <!-- Right Side: Content Display View (Shows Office Directory, Campus Map, FAQs) -->
+      <section class="panel chat-panel" aria-label="Campus Information Display">
+        <div class="chat-head">
+          <h2 id="contentPanelTitle"><i class="fa-solid fa-building-columns" style="margin-right:8px;color:var(--brass);"></i>Office Directory</h2>
+          <span class="status"><span class="d"></span>Live</span>
+        </div>
+
+        <div class="chat-body" id="infoContentBody">
+          <!-- Content dynamically rendered when quick information chips are clicked -->
+        </div>
+      </section>
+
+    </div>
+
+    <!-- ==========================================================
+         FLOATING ACC CHAT WIDGET (Fixed bottom-right assistant)
+         ========================================================== -->
+    <button 
+      type="button" 
+      id="chat-toggle-btn" 
+      onclick="toggleWidgetChat()" 
+      class="widget-toggle-btn"
+      aria-label="Toggle ACC Assistant Widget"
+      title="Open ACC Assistant Widget"
+    >
+      <i id="toggle-icon" class="fa-solid fa-comments"></i>
+    </button>
+
+    <!-- Floating Assistant Box -->
+    <div id="chat-widget" class="chat-widget-box hidden" role="dialog" aria-label="CampusBot Assistant">
+      <div class="widget-header">
+        <div class="widget-brand-info">
+          <div class="widget-acc-avatar"><i class="fa-solid fa-graduation-cap"></i></div>
+          <div class="widget-title">
+            <h3>ACC Student Help Desk</h3>
+            <p>CampusBot Digital Assistant</p>
+          </div>
+        </div>
+        <button type="button" onclick="toggleWidgetChat()" class="widget-close-btn" aria-label="Close widget">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <!-- Messages Stream -->
+      <div id="widget-chat-window" class="widget-messages-window">
+        <div class="widget-msg-row">
+          <div class="widget-ai-avatar"><i class="fa-solid fa-shield-halved"></i></div>
+          <div class="widget-bubble bot">
+            <p style="font-weight:700;color:var(--ink);margin:0 0 4px;">Peace and Goodness!</p>
+            <p style="margin:0 0 8px;">I am your official Aklan Catholic College digital assistant. How may I assist you today?</p>
+            <div class="widget-quick-suggestions">
+              <button type="button" onclick="sendQuickWidgetQuery('What are the latest announcements?')" class="widget-suggestion-btn">Announcements</button>
+              <button type="button" onclick="sendQuickWidgetQuery('Where is the Office Directory?')" class="widget-suggestion-btn">Office Directory</button>
+              <button type="button" onclick="sendQuickWidgetQuery('Where can I find the Campus Map?')" class="widget-suggestion-btn">Campus Map</button>
+              <button type="button" onclick="sendQuickWidgetQuery('What are the enrollment requirements?')" class="widget-suggestion-btn">Enrollment</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Widget Input -->
+      <div class="widget-footer">
+        <form onsubmit="handleWidgetSend(event)" class="widget-input-form">
+          <input 
+            type="text" 
+            id="widget-user-input" 
+            placeholder="Ask CampusBot..." 
+            autocomplete="off"
+            required
+          >
+          <button type="submit" class="widget-send-btn" aria-label="Send query">
+            <i class="fa-solid fa-paper-plane" style="font-size:12px;"></i>
+          </button>
+        </form>
+      </div>
+    </div>
+
+  </main>
+
+</div>
+
+<!-- ======================================================================
+     MODALS
+     ====================================================================== -->
+
+<!-- 1. Terms & Privacy Modal -->
+<div class="modal-overlay" id="infoModalOverlay" role="dialog" aria-modal="true">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3 id="infoModalTitle">Terms & Policy</h3>
+      <button type="button" class="modal-close" onclick="closeInfoModal()" aria-label="Close modal">&times;</button>
+    </div>
+    <div id="infoModalBody"></div>
+  </div>
+</div>
+
+<!-- 2. Contact Staff Modal (Saves directly to Firestore & sends EmailJS) -->
+<div class="modal-overlay" id="contactModalOverlay" role="dialog" aria-modal="true">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3>Contact School Staff</h3>
+      <button type="button" class="modal-close" onclick="closeContactModal()" aria-label="Close modal">&times;</button>
+    </div>
+    <p class="admin-sub" style="margin-top:6px;">Can't find your answer in CampusBot? Submit your question directly to ACC administration and we'll reply by email.</p>
+    <div class="auth-field">
+      <label for="contactName">Your Full Name</label>
+      <input type="text" id="contactName" placeholder="Juan Dela Cruz">
+    </div>
+    <div class="auth-field">
+      <label for="contactEmail">Your Student Email</label>
+      <input type="email" id="contactEmail" placeholder="Enter your email">
+    </div>
+    <div class="auth-field">
+      <label for="contactMessage">Your Question or Inquiry</label>
+      <textarea id="contactMessage" rows="4" maxlength="2000" placeholder="Type your inquiry here..."></textarea>
+    </div>
+    <div id="contactStatusMsg"></div>
+    <button type="button" class="auth-submit" style="margin-bottom:0;" onclick="sendContactForm()">
+      <i class="fa-solid fa-paper-plane" style="margin-right:6px;"></i>Send to Staff
+    </button>
+  </div>
+</div>
+
+<!-- ======================================================================
+     SCRIPTS
+     ====================================================================== -->
+<script src="js/firebase-config.js"></script>
+<script src="js/campusbot-api.js"></script>
+<script src="js/auth.js"></script>
+
+<script>
+/* ============================================================================
+   STUDENT DASHBOARD ORCHESTRATION
+   ============================================================================ */
+
+async function initStudentDashboard() {
+  if (typeof window.loadData !== 'function') {
+    document.body.insertAdjacentHTML('afterbegin', '<div role="alert" style="background:#A32A18;color:#fff;padding:12px 16px;font:600 14px sans-serif;">CampusBot could not load js/firebase-config.js. Keep student-dashboard.html next to the css/ and js/ folders.</div>');
+    return;
+  }
+
+  // 1. Load school knowledge base
+  await window.loadData();
+
+  // 2. Initialize EmailJS if configured
+  if (window.emailjs && window.EMAILJS_PUBLIC_KEY && !window.EMAILJS_PUBLIC_KEY.startsWith("YOUR_")) {
+    emailjs.init({ publicKey: window.EMAILJS_PUBLIC_KEY });
+  }
+
+  // 3. Set School Name label
+  const nameLabel = document.getElementById('schoolNameLabel');
+  if (nameLabel && window.DATA && window.DATA.school) {
+    nameLabel.textContent = window.DATA.school.name;
+  }
+
+  // 4. Render UI Elements
+  renderBoard();
+  renderChips();
+  showContentSection(activeContentTab);
+
+  // 5. Real-time Synchronization: updates or deletes from staff/super-admin reflect instantly without page reload
+  if (typeof window.subscribeToDataUpdates === 'function') {
+    window.subscribeToDataUpdates(() => {
+      renderBoard();
+      showContentSection(activeContentTab);
+      // Re-render brand name if updated
+      if (nameLabel && window.DATA && window.DATA.school) {
+        nameLabel.textContent = window.DATA.school.name;
+      }
+    });
+  }
+
+  // 6. Restore auth session (guard against unauthenticated access)
+  if (typeof window.initAuthSessions === 'function') {
+    window.initAuthSessions();
+  }
+}
+
+/* ============================================================================
+   CAMPUS ANNOUNCEMENTS FEED
+   ============================================================================ */
+const ANN_CATEGORIES = {
+  Academic:   { icon: 'fa-book-open',            cls: 'academic' },
+  Event:      { icon: 'fa-calendar-check',       cls: 'event' },
+  Enrollment: { icon: 'fa-clipboard-list',       cls: 'enrollment' },
+  Suspension: { icon: 'fa-triangle-exclamation', cls: 'suspension' },
+  General:    { icon: 'fa-bullhorn',             cls: 'general' }
+};
+
+function renderBoard() {
+  const el = document.getElementById('flapBoard');
+  if (!el) return;
+  const countEl = document.getElementById('annCount');
+
+  const items = ((window.DATA && window.DATA.announcements) || [])
+    .map((a, i) => ({ a, i, t: window.annTimestamp(a) }))
+    .sort((x, y) => (y.t - x.t) || (y.i - x.i));
+
+  if (countEl) countEl.textContent = items.length ? items.length + (items.length === 1 ? ' post' : ' posts') : '';
+
+  if (!items.length) {
+    el.innerHTML = '<div class="ann-empty"><i class="fa-regular fa-bell-slash" aria-hidden="true"></i> No announcements yet. Check back soon.</div>';
+    return;
+  }
+
+  const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+  el.innerHTML = items.map(({ a, t }) => {
+    const known = !!ANN_CATEGORIES[a.category];
+    const cat = known ? ANN_CATEGORIES[a.category] : ANN_CATEGORIES.General;
+    const label = known ? a.category : 'General';
+    return `
+      <article class="ann-card ann-${cat.cls}">
+        <div class="ann-meta">
+          <span class="ann-tag"><i class="fa-solid ${cat.icon}" aria-hidden="true"></i>${label}</span>
+          <time class="ann-date"${t ? ` datetime="${new Date(t).toISOString().slice(0, 10)}"` : ''}><i class="fa-regular fa-clock" aria-hidden="true"></i>${escapeHtml(window.formatAnnDate(a.date))}</time>
+          ${t > weekAgo ? '<span class="ann-new">New</span>' : ''}
+        </div>
+        <h3 class="ann-title">${escapeHtml(a.title)}</h3>
+        ${a.body ? `<p class="ann-body">${escapeHtml(a.body)}</p>` : ''}
+      </article>`;
+  }).join('');
+}
+
+/* ============================================================================
+   SUGGESTED CHIPS & CONTENT DISPLAY
+   ============================================================================ */
+let activeContentTab = 'offices';
+
+function renderChips() {
+  const items = [
+    { key: "offices", label: "Office Directory", icon: "fa-building-columns" },
+    { key: "mapPlaces", label: "Campus Map", icon: "fa-map-pin" },
+    { key: "faqs", label: "FAQs", icon: "fa-circle-question" },
+    { key: "contact", label: "Contact School Staff", icon: "fa-envelope" }
+  ];
+
+  const el = document.getElementById('quickChips');
+  if (!el) return;
+  el.innerHTML = '';
+
+  items.forEach(it => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'chip' + (activeContentTab === it.key ? ' active-chip' : '');
+    b.innerHTML = `<i class="fa-solid ${it.icon} ic"></i><span>${it.label}</span>`;
+    b.onclick = () => {
+      if (it.key === 'contact') {
+        openContactModal('');
+      } else {
+        showContentSection(it.key);
+      }
+    };
+    el.appendChild(b);
+  });
+}
+
+function showContentSection(key) {
+  activeContentTab = key;
+  renderChips();
+
+  const titleEl = document.getElementById('contentPanelTitle');
+  const bodyEl = document.getElementById('infoContentBody');
+  if (!bodyEl) return;
+
+  const data = window.DATA || window.DEFAULTS || {};
+
+  if (key === 'offices') {
+    if (titleEl) titleEl.innerHTML = '<i class="fa-solid fa-building-columns" style="margin-right:8px;color:var(--brass);"></i>Office Directory';
+    const list = data.offices || [];
+    if (!list.length) {
+      bodyEl.innerHTML = `
+        <div class="empty-state">
+          <i class="fa-solid fa-building-columns" style="font-size:32px;color:var(--line-strong);margin-bottom:10px;display:block;"></i>
+          <b>No office directory entries posted yet.</b><br>
+          <span style="font-size:13px;color:var(--text-muted);">Official campus offices added by staff or administrators will appear here.</span>
+        </div>
+      `;
+      return;
+    }
+    bodyEl.innerHTML = `
+      <div>
+        ${list.map(o => `
+          <div class="info-card">
+            <div class="info-badge">Official Campus Office</div>
+            <h3 class="info-title">${escapeHtml(o.name)}</h3>
+            <div class="info-meta">
+              <div class="info-meta-row"><i class="fa-solid fa-location-dot"></i> <div><b>Location:</b> ${escapeHtml(o.location || 'Campus premises')}</div></div>
+              <div class="info-meta-row"><i class="fa-solid fa-clock"></i> <div><b>Operating Hours:</b> ${escapeHtml(o.hours || 'Regular office hours')}</div></div>
+              <div class="info-meta-row"><i class="fa-solid fa-envelope"></i> <div><b>Contact:</b> ${escapeHtml(o.contact || 'Inquire at administration')}</div></div>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    `;
+    return;
+  }
+
+  if (key === 'mapPlaces') {
+    if (titleEl) titleEl.innerHTML = '<i class="fa-solid fa-map-pin" style="margin-right:8px;color:var(--brass);"></i>Campus Map & Facilities';
+    const list = data.mapPlaces || [];
+    if (!list.length) {
+      bodyEl.innerHTML = `
+        <div class="empty-state">
+          <i class="fa-solid fa-map-location-dot" style="font-size:32px;color:var(--line-strong);margin-bottom:10px;display:block;"></i>
+          <b>No campus facilities or map entries posted yet.</b><br>
+          <span style="font-size:13px;color:var(--text-muted);">Buildings and campus locations added by staff or administrators will appear here.</span>
+        </div>
+      `;
+      return;
+    }
+    bodyEl.innerHTML = `
+      <div>
+        ${list.map(m => `
+          <div class="info-card navy-strip">
+            <div class="info-badge navy">Campus Facility</div>
+            <h3 class="info-title">${escapeHtml(m.building)}</h3>
+            <p style="margin:0;color:var(--text);font-size:13.5px;line-height:1.65;">${escapeHtml(m.description || '')}</p>
+          </div>
+        `).join('')}
+      </div>
+    `;
+    return;
+  }
+
+  if (key === 'faqs') {
+    if (titleEl) titleEl.innerHTML = '<i class="fa-solid fa-circle-question" style="margin-right:8px;color:var(--brass);"></i>Frequently Asked Questions (FAQs)';
+    const list = data.faqs || [];
+
+    if (!list.length) {
+      bodyEl.innerHTML = `
+        <div class="empty-state">
+          <i class="fa-solid fa-circle-question" style="font-size:32px;color:var(--line-strong);margin-bottom:10px;display:block;"></i>
+          <b>No FAQs posted yet.</b><br>
+          <span style="font-size:13px;color:var(--text-muted);">Frequently asked questions added by administrators will appear here.</span>
+        </div>
+      `;
+      return;
+    }
+    bodyEl.innerHTML = `
+      <div>
+        ${list.map(f => `
+          <div class="info-card">
+            <div class="info-badge">FAQ</div>
+            <h3 class="info-title">${escapeHtml(f.question)}</h3>
+            <p style="margin:0;color:var(--text);font-size:13.5px;line-height:1.65;">${escapeHtml(f.answer || '')}</p>
+          </div>
+        `).join('')}
+      </div>
+    `;
+    return;
+  }
+}
+
+/* ============================================================================
+   FLOATING ACC CHAT WIDGET
+   ============================================================================ */
+function toggleWidgetChat() {
+  const widget = document.getElementById("chat-widget");
+  const icon = document.getElementById("toggle-icon");
+  if (!widget) return;
+
+  if (widget.classList.contains("hidden")) {
+    widget.classList.remove("hidden");
+    if (icon) icon.className = "fa-solid fa-xmark";
+  } else {
+    widget.classList.add("hidden");
+    if (icon) icon.className = "fa-solid fa-comments";
+  }
+}
+
+async function handleWidgetSend(e) {
+  if (e) e.preventDefault();
+  const input = document.getElementById("widget-user-input");
+  const query = input ? input.value.trim() : '';
+  if (!query) return;
+
+  appendWidgetMessage(query, "user");
+  input.value = "";
+
+  const chatWindow = document.getElementById("widget-chat-window");
+  const typingDiv = document.createElement("div");
+  typingDiv.id = "widgetTyping";
+  typingDiv.className = "widget-msg-row";
+  typingDiv.innerHTML = `
+    <div class="widget-ai-avatar"><i class="fa-solid fa-shield-halved"></i></div>
+    <div class="widget-bubble bot"><div class="typing"><span></span><span></span><span></span></div></div>
+  `;
+  chatWindow.appendChild(typingDiv);
+  chatWindow.scrollTop = chatWindow.scrollHeight;
+
+  try {
+    const result = await window.CampusBotAPI.ask(query);
+    const typingEl = document.getElementById("widgetTyping");
+    if (typingEl) typingEl.remove();
+    appendWidgetMessage(result.reply, "bot");
+  } catch (err) {
+    const typingEl = document.getElementById("widgetTyping");
+    if (typingEl) typingEl.remove();
+    appendWidgetMessage("I am currently having difficulty connecting to my knowledge base. Please ask again or contact staff.", "bot");
+  }
+}
+
+function sendQuickWidgetQuery(text) {
+  const input = document.getElementById("widget-user-input");
+  if (input) input.value = text;
+  handleWidgetSend(new Event('submit'));
+}
+
+function appendWidgetMessage(text, sender) {
+  const chatWindow = document.getElementById("widget-chat-window");
+  if (!chatWindow) return;
+
+  const container = document.createElement("div");
+  container.className = "widget-msg-row " + (sender === "user" ? "user-msg" : "");
+
+  if (sender === "user") {
+    container.innerHTML = `
+      <div class="widget-bubble user">
+        ${escapeHtml(text)}
+      </div>
+    `;
+  } else {
+    container.innerHTML = `
+      <div class="widget-ai-avatar"><i class="fa-solid fa-shield-halved"></i></div>
+      <div class="widget-bubble bot">
+        ${text}
+      </div>
+    `;
+  }
+
+  chatWindow.appendChild(container);
+  chatWindow.scrollTop = chatWindow.scrollHeight;
+}
+
+// Initialize on DOM load
+window.addEventListener('DOMContentLoaded', initStudentDashboard);
+</script>
+
+</body>
+</html>
