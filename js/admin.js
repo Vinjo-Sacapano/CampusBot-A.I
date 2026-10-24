@@ -532,7 +532,7 @@ async function renderInquiriesView(container) {
   container.innerHTML = `
     <h2>Student Inquiries & Contact Messages</h2>
     <p class="admin-sub">Questions submitted by students via the Contact Staff modal.</p>
-    <div id="inquiriesLoading" style="color:var(--text-dim);font-size:13px;padding:12px 0;">Loading incoming inquiries...</div>
+    <div id="inquiriesLoading" style="color: white; font-size:13px; padding:12px 0; ">Loading incoming inquiries...</div>
     <div id="inquiriesList" class="record-list"></div>
   `;
 
@@ -564,12 +564,12 @@ async function renderInquiriesView(container) {
 
   let html = '';
   messages.forEach(msg => {
-    html += `
-      <div class="record" style="cursor:default;">
+        html += `
+      <div class="record" style="cursor:default; background-color:#4b5563; padding:12px; border-radius:10px; margin-bottom:10px;">
         <div class="record-main">
-          <span class="meta">${escapeHtml(msg.createdAt && msg.createdAt.toDate ? msg.createdAt.toDate().toLocaleString() : 'Just now')}</span>
-          <b>${escapeHtml(msg.name)}</b> &lt;<a href="mailto:${escapeAttr(msg.email)}" style="color:var(--brass);">${escapeHtml(msg.email)}</a>&gt;<br>
-          <div style="background:#FFFDF8;border:1px solid var(--line-light);padding:8px 12px;border-radius:6px;margin-top:6px;font-size:13px;">
+          <span class="meta" style="color:white;">${escapeHtml(msg.createdAt && msg.createdAt.toDate ? msg.createdAt.toDate().toLocaleString() : 'Just now')}</span>
+          <b style="color:white;">${escapeHtml(msg.name)}</b> &lt;<a href="mailto:${escapeAttr(msg.email)}" style="color:white;">${escapeHtml(msg.email)}</a>&gt
+          <div style="background:#6b7280;border:1px solid #9ca3af;padding:8px 12px;border-radius:6px;margin-top:6px;font-size:13px; color:white;">
             ${escapeHtml(msg.message)}
           </div>
           ${msg.unansweredQuestion ? `<div style="font-size:11px;color:var(--text-dim);margin-top:4px;"><i>Triggered by query: "${escapeHtml(msg.unansweredQuestion)}"</i></div>` : ''}
