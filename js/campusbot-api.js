@@ -183,7 +183,7 @@ const CampusBotAPI = (function () {
                `• <b>Campus Locations:</b> Main Campus (Kalibo) & Mabasa Campus (Andagao)<br>` +
                `• <b>Office Directory:</b> Registrar, Admissions, Guidance, Cashier<br>` +
                `• <b>Enrollment Guide:</b> 4-step admission & registration procedure<br>` +
-               `• <b>Rules & Regulations:</b> Uniform, ID policy, attendance, conduct<br>` +
+               `• <b>Rules & Regulations:</b> Uniform, Departamental on wednesday for colleges, ID policy, attendance 3 consecutive absences drop, 7 not consecutive drop, conduct<br>` +
                `• <b>Campus Announcements:</b> Official news & academic updates`,
         source: "CampusBot Assistant Guide"
       };
@@ -198,10 +198,33 @@ const CampusBotAPI = (function () {
 
     if (qLower.includes("president") || qLower.includes("rector")) {
       return {
-        reply: `<b>Rev. Fr. Emmanuel C. Mijares</b> serves as the College President of <b>${schoolName}</b>.`,
+        reply: `<b>Rev. Fr. Jose Gualberto I. Villasis, Ph.D.</b> is the Rector-President of <b>${schoolName}</b>. <br> <br> Under his leadership, ACC advances its "Waves of Innovation" - focusing on academic excellence, Catholic Christian formation, faculty development, research enhancement, and institutional modernization.`,
         source: "Administration Directory"
       };
     }
+
+    if (qLower.includes("program") || qLower.includes("course") || qLower.includes("offer") || qLower.includes("academic")) {
+  return {
+    reply: `Academic Programs Offered at <b>${schoolName}</b>:<br><br>
+    <b>- Business Education & Accountancy:</b><br>
+    BS Accountancy (BSA), BS Management Accounting (BSMA), BSBA (Financial Management, Marketing, HRDM), BS Hospitality Management (BSHM), BS Entrepreneurship.<br><br>
+    <b>- Teacher Education & Liberal Arts:</b><br>
+    BEEd, BSEd (English, Math, Science, Social Studies, Filipino), AB in Political Science, AB in English Language.<br><br>
+    <b>- Criminal Justice:</b><br>
+    BS in Criminology (BS Criminology).<br><br>
+    <b>- Computer Studies:</b><br>
+    BS in Information Technology (BSIT), BS in Computer Science (BSCS).<br><br>
+    <b>- Nursing:</b><br>
+    BS in Nursing (BSN).<br><br>
+    <b>- College of Law:</b><br>
+    Juris Doctor (J.D.).<br><br>
+    <b>- Graduate School:</b><br>
+    MAEd, MBA, MPA.<br><br>
+    <b>- Basic Education (Mabasa Campus):</b><br>
+    Elementary, JHS, and Senior High School (STEM, ABM, HUMSS, GAS, TVL).`,
+    source: "Academic Programs"
+  };
+}
 
     // 1. FAQs Token & Semantic Matching
     if (Array.isArray(data.faqs) && data.faqs.length) {
