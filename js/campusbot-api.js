@@ -103,66 +103,17 @@ const CampusBotAPI = (function () {
       .replace(/\n/g, '<br>');
   }
 
-  /**
-   * Call Groq AI API with structured RAG prompt
-   */
   async function callGroqAI(question, context) {
-    const apiKey = window.GROQ_API_KEY;
-    if (!apiKey || apiKey.startsWith("YOUR_") || apiKey.trim() === "") {
-      throw new Error("NO_API_KEY");
-    }
+  const response = await fetch('/api/chat', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ message: question, context: context })
+  });
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.error || 'API failed');
+  return data.answer;
+}
 
-    const systemPrompt = 
-      "You are CampusBot AI, the official student assistant for Aklan Catholic College (ACC) in Kalibo, Aklan.\n" +
-      "Your primary role is to answer questions related to:\n" +
-      "1. How this website works (dashboard, quick information, offices, announcements, FAQs, staff contact).\n" +
-      "2. Admissions and Enrollment procedures, requirements, and steps.\n" +
-      "3. School rules and regulations (ID policy, uniform, attendance, student conduct).\n" +
-      "4. Campus offices, facilities, announcements, and school directory information.\n\n" +
-      "STRICT SCOPE RULE:\n" +
-      "If the user asks about ANY topic NOT related to Aklan Catholic College (e.g. world politics, celebrities, writing code/games, math homework, general trivia, external events), you MUST NOT answer it. You must reply ONLY with this exact sentence:\n" +
-      "\"I am AI chatbot that will help only related to Aklan Catholic College.\"\n\n" +
-      "Tone: Helpful, polite, concise, professional. Render important terms with clear formatting.";
-
-    const messages = [
-      { role: "system", content: `${systemPrompt}\n\n=== AKLAN CATHOLIC COLLEGE INFORMATION CONTEXT ===\n${context}` },
-      { role: "user", content: question }
-    ];
-
-    const modelName = window.GROQ_MODEL || "qwen/qwen3.8-27b";
-    const url = "https://api.groq.com/openai/v1/chat/completions";
-
-    const response = await fetch(url, {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${apiKey}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        model: modelName,
-        messages: messages,
-        temperature: 0.2,
-        max_tokens: 650
-      })
-    });
-
-    if (!response.ok) {
-      const errBody = await response.text();
-      console.warn("Groq API error status:", response.status, errBody);
-      throw new Error(`Groq API error: ${response.status}`);
-    }
-
-    const result = await response.json();
-    const message = result.choices && result.choices[0] && result.choices[0].message;
-    if (message && message.content) {
-      return formatMarkdown(message.content.trim());
-    }
-    throw new Error("EMPTY_GROQ_RESPONSE");
-  }
-
-  /**
-   * Local RAG Fallback Matcher (Guarantees CampusBot works even without API Key or offline)
-   */
   function localRAGFallback(query) {
     const qLower = query.toLowerCase().trim();
     const data = window.DATA || window.DEFAULTS || {};
@@ -183,7 +134,7 @@ const CampusBotAPI = (function () {
                `• <b>Campus Locations:</b> Main Campus (Kalibo) & Mabasa Campus (Andagao)<br>` +
                `• <b>Office Directory:</b> Registrar, Admissions, Guidance, Cashier<br>` +
                `• <b>Enrollment Guide:</b> 4-step admission & registration procedure<br>` +
-               `• <b>Rules & Regulations:</b> Uniform, Departamental on wednesday for colleges, ID policy, attendance 3 consecutive absences drop, 7 not consecutive drop, conduct<br>` +
+               `• <b>Rules & Regulations:</b> Uniform, conduct<br>` +
                `• <b>Campus Announcements:</b> Official news & academic updates`,
         source: "CampusBot Assistant Guide"
       };
@@ -195,36 +146,6 @@ const CampusBotAPI = (function () {
         source: "Institutional Identity"
       };
     }
-
-    if (qLower.includes("president") || qLower.includes("rector")) {
-      return {
-        reply: `<b>Rev. Fr. Jose Gualberto I. Villasis, Ph.D.</b> is the Rector-President of <b>${schoolName}</b>. <br> <br> Under his leadership, ACC advances its "Waves of Innovation" - focusing on academic excellence, Catholic Christian formation, faculty development, research enhancement, and institutional modernization.`,
-        source: "Administration Directory"
-      };
-    }
-
-    if (qLower.includes("program") || qLower.includes("course") || qLower.includes("offer") || qLower.includes("academic")) {
-  return {
-    reply: `Academic Programs Offered at <b>${schoolName}</b>:<br><br>
-    <b>- Business Education & Accountancy:</b><br>
-    BS Accountancy (BSA), BS Management Accounting (BSMA), BSBA (Financial Management, Marketing, HRDM), BS Hospitality Management (BSHM), BS Entrepreneurship.<br><br>
-    <b>- Teacher Education & Liberal Arts:</b><br>
-    BEEd, BSEd (English, Math, Science, Social Studies, Filipino), AB in Political Science, AB in English Language.<br><br>
-    <b>- Criminal Justice:</b><br>
-    BS in Criminology (BS Criminology).<br><br>
-    <b>- Computer Studies:</b><br>
-    BS in Information Technology (BSIT), BS in Computer Science (BSCS).<br><br>
-    <b>- Nursing:</b><br>
-    BS in Nursing (BSN).<br><br>
-    <b>- College of Law:</b><br>
-    Juris Doctor (J.D.).<br><br>
-    <b>- Graduate School:</b><br>
-    MAEd, MBA, MPA.<br><br>
-    <b>- Basic Education (Mabasa Campus):</b><br>
-    Elementary, JHS, and Senior High School (STEM, ABM, HUMSS, GAS, TVL).`,
-    source: "Academic Programs"
-  };
-}
 
     // 1. FAQs Token & Semantic Matching
     if (Array.isArray(data.faqs) && data.faqs.length) {

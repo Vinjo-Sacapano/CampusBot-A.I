@@ -1,28 +1,3 @@
-/**
- * ============================================================================
- * CampusBot AI — Firebase & AI Configuration (Aklan Catholic College)
- * ============================================================================
- * 
- * 1. GOOGLE GEMINI API KEY:
- *    Get your free Gemini API key from: https://aistudio.google.com/app/apikey
- *    Replace "YOUR_GEMINI_API_KEY_HERE" below with your actual API key.
- *    If left blank or placeholder, CampusBot AI will use its built-in local RAG
- *    fallback engine so your project will NEVER crash!
- * 
- * 2. FIREBASE CONFIG:
- *    Connects to the cloud Firestore database and Firebase Authentication.
- * ============================================================================
- */
-
-// ==========================================
-// 1. GROQ & AI API CONFIGURATION
-// ==========================================
-const GROQ_API_KEY = "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";
-const GROQ_MODEL = "qwen/qwen3.8-27b";
-
-// ==========================================
-// 2. EMAILJS CONFIGURATION
-// ==========================================
 const EMAILJS_PUBLIC_KEY  = "Zi0GqfqEAqtzQUsJA";   
 const EMAILJS_SERVICE_ID  = "service_5jrhbza";    
 const EMAILJS_TEMPLATE_ID = "template_68sa31j";   
@@ -32,11 +7,6 @@ window.EMAILJS_SERVICE_ID = EMAILJS_SERVICE_ID;
 window.EMAILJS_TEMPLATE_ID = EMAILJS_TEMPLATE_ID;
 window.EMAILJS_PUBLIC_KEY && window.emailjs && emailjs.init(window.EMAILJS_PUBLIC_KEY);
 
-// ==========================================
-// 3. FIREBASE CONFIGURATION
-// ==========================================
-
-// Your web app's Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyCQ2Q4sLRQVRfscebJ6vzFA5GZohMeXwfw",
   authDomain: "campusbot-8b059.firebaseapp.com",
@@ -248,9 +218,6 @@ function formatAnnDate(raw) {
   return t ? new Date(t).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' }) : (raw || 'Undated');
 }
 
-// Attach to window so all modules can access
-window.GROQ_API_KEY = GROQ_API_KEY;
-window.GROQ_MODEL = GROQ_MODEL;
 window.EMAILJS_PUBLIC_KEY = EMAILJS_PUBLIC_KEY;
 window.EMAILJS_SERVICE_ID = EMAILJS_SERVICE_ID;
 window.EMAILJS_TEMPLATE_ID = EMAILJS_TEMPLATE_ID;
