@@ -142,7 +142,7 @@ const CampusBotAPI = (function () {
 
     if (qLower.includes("motto") || qLower.includes("vision") || qLower.includes("mission")) {
       return {
-        reply: `The official motto of <b>${schoolName}</b> is <b>"Peace and Goodness"</b> (<i>Pax et Bonum</i>). ACC is dedicated to holistic Catholic education and academic excellence.`,
+        reply: `The official motto of <b>${schoolName}</b> is <b>"Pro Deo et Patria"</b> (<i>Pax et Bonum</i>). ACC is dedicated to holistic Catholic education and academic excellence.`,
         source: "Institutional Identity"
       };
     }
