@@ -36,7 +36,7 @@ const CampusBotAPI = (function () {
     const schoolName = (data.school && data.school.name) || "Aklan Catholic College";
     const parts = [];
 
-    parts.push(`=== INSTITUTION ===\nSchool Name: ${schoolName}\nMotto: Peace and Goodness\nCollege President: Rev. Fr. Emmanuel C. Mijares\nLocation: Kalibo, Aklan, Philippines`);
+    parts.push(`=== INSTITUTION ===\nSchool Name: ${schoolName}\nMotto: Pro Deo et Patria`);
 
     // Website operation guide
     parts.push(`=== WEBSITE OVERVIEW & HOW THE WEBSITE WORKS ===
